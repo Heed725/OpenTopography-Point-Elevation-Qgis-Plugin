@@ -1,0 +1,44 @@
+name: Build QGIS Plugin ZIP
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'OpenTopography-Point-Elevation.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build QGIS installable ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf package OpenTopography-Point-Elevation.zip
+          mkdir -p package/OpenTopography-Point-Elevation
+          cp __init__.py api.py dialog.py map_tool.py metadata.txt plugin.py processing_algorithm.py processing_provider.py icon.png README.md CREDITS.md LICENSE package/OpenTopography-Point-Elevation/
+          cd package
+          zip -r ../OpenTopography-Point-Elevation.zip OpenTopography-Point-Elevation
+          cd ..
+          unzip -t OpenTopography-Point-Elevation.zip
+
+      - name: Commit refreshed ZIP
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add OpenTopography-Point-Elevation.zip
+          if git diff --cached --quiet; then
+            echo 'ZIP is already up to date.'
+            exit 0
+          fi
+          git commit -m 'Build installable QGIS plugin ZIP'
+          git push
