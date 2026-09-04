@@ -44,7 +44,7 @@ This creates a new output point layer containing all original attributes plus:
 - `ot_vcrs`
 - `ot_unit`
 
-This is useful in Processing Modeler and repeatable workflows. The Processing tool reads the API key saved by the main plugin dialog instead of exposing the key as a Processing parameter.
+The Processing tool includes an **Enter OpenTopography access key** field. This intentionally follows the same pattern as the OpenTopography DEM Downloader: paste the key once, run the tool, and the key is saved in the current QGIS profile so it appears in the field automatically on later runs.
 
 ## Selectable elevation datasets
 
@@ -74,10 +74,11 @@ OpenTopography requires a personal API key for the Point Elevation API.
 
 1. Create/login to an OpenTopography account.
 2. Request/manage the API key from the OpenTopography portal.
-3. Paste the key into the plugin.
-4. Optionally allow the plugin to remember it in the current QGIS profile settings.
+3. Paste the key into **Enter OpenTopography access key**.
+4. Run the tool once.
+5. On the next run, the saved key is already shown in the field. You can keep using it or replace it with another key.
 
-The API key is **not hard-coded in the plugin** and is not written into output layers.
+Internally this uses QGIS `QgsSettings`, matching the persistence approach used by the OpenTopography DEM Downloader. The API key is not written into output point layers.
 
 ## API usage and limits
 
