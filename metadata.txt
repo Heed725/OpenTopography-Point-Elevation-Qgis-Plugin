@@ -15,4 +15,4 @@ deprecated=False
 tags=OpenTopography,elevation,DEM,point,terrain,SRTM,Copernicus,NASADEM,QGIS
 homepage=https://opentopography.org/
 
-changelog=1.0.0 - Initial release: enrich point layers, map-click point creation, manual coordinate point creation, selectable Point Elevation API datasets, vertical CRS metadata, Processing algorithm, remembered API key.
+changelog=1.0.0 - Initial release: enrich point layers, map-click point creation, manual coordinate point creation, selectable Point Elevation API datasets, vertical CRS metadata, Processing algorithm, persistent API key field matching OpenTopography DEM Downloader behavior.
