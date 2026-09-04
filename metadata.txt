@@ -3,7 +3,7 @@ name=OpenTopography Point Elevation
 qgisMinimumVersion=3.22
 qgisMaximumVersion=4.99
 description=Add OpenTopography elevation values to point attributes or create elevation-aware points by clicking the QGIS map.
-version=1.0.0
+version=1.0.1
 author=Hemed Lungo
 email=
 about=OpenTopography Point Elevation uses the OpenTopography Point Elevation API to query an elevation for a WGS84 coordinate from a selectable global or regional elevation dataset. It can enrich an existing point layer's attribute table, create new elevation points from typed coordinates, or create points by clicking the map. The API-reported vertical CRS EPSG and unit can be stored with each result. Inspired by and credited to the OpenTopography DEM Downloader QGIS plugin by Kyaw Naing Win, while implemented as a separate point-elevation workflow.
@@ -15,4 +15,4 @@ deprecated=False
 tags=OpenTopography,elevation,DEM,point,terrain,SRTM,Copernicus,NASADEM,QGIS
 homepage=https://opentopography.org/
 
-changelog=1.0.0 - Initial release: enrich point layers, map-click point creation, manual coordinate point creation, selectable Point Elevation API datasets, vertical CRS metadata, Processing algorithm, persistent API key field matching OpenTopography DEM Downloader behavior.
+changelog=1.0.1 - Replaced the plugin icon with the new OpenTopography Point Elevation design.\n1.0.0 - Initial release: enrich point layers, map-click point creation, manual coordinate point creation, selectable Point Elevation API datasets, vertical CRS metadata, Processing algorithm, persistent API key field matching OpenTopography DEM Downloader behavior.
