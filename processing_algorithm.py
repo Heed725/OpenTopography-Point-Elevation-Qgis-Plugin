@@ -14,6 +14,7 @@ from qgis.core import (
     QgsProcessingParameterEnum,
     QgsProcessingParameterFeatureSink,
     QgsProcessingParameterFeatureSource,
+    QgsProcessingParameterString,
     QgsProject,
     QgsSettings,
     QgsWkbTypes,
@@ -25,6 +26,7 @@ from .api import DATASETS, SETTINGS_KEY, OpenTopographyApiError, dataset_label, 
 class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
     INPUT = "INPUT"
     DATASET = "DATASET"
+    OT_AUTH_TOKEN = "OT_AUTH_TOKEN"
     OUTPUT = "OUTPUT"
 
     def tr(self, text):
@@ -50,11 +52,19 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
             "Queries the OpenTopography Point Elevation API once per input point and creates a new "
             "output layer containing the original attributes plus ot_elev, ot_dem, ot_vcrs and ot_unit. "
             "Input coordinates are transformed to WGS84 before querying. Multipart point features use "
-            "their first point. The algorithm uses the API key saved by the plugin UI so the key is not "
-            "included as a Processing parameter or logged in model history. OpenTopography daily API limits apply."
+            "their first point. Paste your OpenTopography access key into the access-key parameter; the plugin "
+            "stores it in QgsSettings and pre-fills the same field on later runs, matching the OpenTopography "
+            "DEM Downloader workflow. OpenTopography daily API limits apply."
         )
 
     def initAlgorithm(self, config=None):
+        settings = QgsSettings()
+        ot_auth_token = settings.value(SETTINGS_KEY, "", type=str)
+        if not ot_auth_token:
+            auth_prompt = self.tr("Enter OpenTopography access key")
+        else:
+            auth_prompt = self.tr("Enter OpenTopography access key (or use existing one below)")
+
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.INPUT,
@@ -70,6 +80,14 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
                 defaultValue=0,
             )
         )
+        self.addParameter(
+            QgsProcessingParameterString(
+                self.OT_AUTH_TOKEN,
+                auth_prompt,
+                multiLine=False,
+                defaultValue=ot_auth_token,
+            )
+        )
         self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, self.tr("Points with elevation")))
 
     def processAlgorithm(self, parameters, context, feedback):
@@ -79,12 +97,10 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
 
         dataset_index = self.parameterAsEnum(parameters, self.DATASET, context)
         dataset = DATASETS[dataset_index][0]
-        api_key = QgsSettings().value(SETTINGS_KEY, "", type=str).strip()
+        settings = QgsSettings()
+        api_key = self.parameterAsString(parameters, self.OT_AUTH_TOKEN, context).strip()
         if not api_key:
-            raise QgsProcessingException(
-                self.tr("No saved OpenTopography API key was found. Open the plugin, enter your key, "
-                        "leave 'Remember API key in this QGIS profile' enabled, and run a query first.")
-            )
+            raise QgsProcessingException(self.tr("Enter your OpenTopography access key."))
 
         fields = source.fields()
         output_defs = [
@@ -165,4 +181,7 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
 
             feedback.setProgress(int((i + 1) * step))
 
+        # Same persistence pattern as OpenTopography DEM Downloader: after a
+        # run, keep the key in this QGIS profile and pre-fill it next time.
+        settings.setValue(SETTINGS_KEY, api_key)
         return {self.OUTPUT: dest_id}
