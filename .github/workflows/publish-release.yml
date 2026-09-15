@@ -1,0 +1,39 @@
+name: Publish plugin release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'VERSION'
+      - '.github/workflows/publish-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION)"
+          tag="v${version}"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists."
+            exit 0
+          fi
+
+          gh release create "$tag" \
+            OpenTopography-Point-Elevation.zip \
+            --target "$GITHUB_SHA" \
+            --title "OpenTopography Point Elevation ${version}" \
+            --notes "Initial public release. Supports QGIS 3.4 through QGIS 4.x, Qt5 and Qt6, and Python 3.6 or newer. Bandit, detect-secrets and Flake8 checks pass."
