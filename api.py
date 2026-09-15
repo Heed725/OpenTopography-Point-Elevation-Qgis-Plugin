@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 """OpenTopography Point Elevation API helpers."""
 
-from dataclasses import dataclass
-from typing import Optional
-
 import requests
 
 BASE_URL = "https://portal.opentopography.org/API/v1/elevation"
@@ -52,13 +49,22 @@ class OpenTopographyApiError(RuntimeError):
     """A safe API error that never exposes the user's API key."""
 
 
-@dataclass
 class ElevationResult:
-    elevation: Optional[float]
-    shortname: str
-    vcrs_epsg: str
-    unit: str
-    no_data: bool = False
+    """Point elevation response compatible with Python 3.6 and newer."""
+
+    def __init__(
+        self,
+        elevation,
+        shortname,
+        vcrs_epsg,
+        unit,
+        no_data=False,
+    ):
+        self.elevation = elevation
+        self.shortname = shortname
+        self.vcrs_epsg = vcrs_epsg
+        self.unit = unit
+        self.no_data = no_data
 
 
 def _response_message(response):
