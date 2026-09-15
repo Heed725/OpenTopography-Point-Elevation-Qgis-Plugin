@@ -1,6 +1,6 @@
 # OpenTopography Point Elevation — QGIS Plugin
 
-**Version 0.0.1**  
+**Version 0.0.2**  
 **QGIS:** 3.4 through QGIS 4.x
 
 A QGIS plugin for querying the **OpenTopography Point Elevation API** and putting elevation directly into point data.
@@ -96,7 +96,7 @@ GNU General Public License v3.0 or later. See `LICENSE`.
 ## Compatibility and security
 
 - QGIS 3.4+ with Qt5 is supported through compatibility fallbacks.
-- QGIS 4 with Qt6 uses `QMetaType` and `Qgis.ProcessingSourceType`.
+- QGIS 4 with Qt6 uses `QMetaType`, `QgsProcessing.SourceType` and `QgsFeatureSink.Flag`.
 - Python 3.6 and newer are supported without `dataclasses`.
 - API keys are never hard-coded or included in output layers.
 - Connection errors do not display request URLs that may contain API keys.

@@ -3,7 +3,7 @@ name=OpenTopography Point Elevation
 qgisMinimumVersion=3.4
 qgisMaximumVersion=4.99
 description=Create a point layer with OpenTopography elevation values using a QGIS Processing algorithm.
-version=0.0.1
+version=0.0.2
 author=Hemed Lungo
 email=hemedllungo@gmail.com
 about=OpenTopography Point Elevation uses the OpenTopography Point Elevation API to create a new copy of an input point layer containing elevation, dataset, vertical CRS EPSG and unit fields. The toolbar icon, Vector menu and Processing Toolbox all open the same Processing algorithm. Inspired by and credited to the OpenTopography DEM Downloader QGIS plugin by Kyaw Naing Win.
@@ -17,4 +17,4 @@ homepage=https://opentopography.org/
 repository=https://github.com/Heed725/OpenTopography-Point-Elevation-Qgis-Plugin
 tracker=https://github.com/Heed725/OpenTopography-Point-Elevation-Qgis-Plugin/issues
 
-changelog=0.0.1 - Initial public release supporting QGIS 3.4 through QGIS 4.x, including Qt5/Qt6 and Python 3.6+ compatibility, Processing Toolbox integration, API-key persistence and security scanning.
+changelog=0.0.2 - Use scoped Processing SourceType and FeatureSink Flag enums for QGIS 4 and Qt6, with compatibility fallbacks for QGIS 3.4. Package directory is PEP 8 compliant.

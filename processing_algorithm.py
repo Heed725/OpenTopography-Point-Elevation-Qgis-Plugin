@@ -3,7 +3,6 @@
 
 from qgis.PyQt import QtCore
 from qgis.core import (
-    Qgis,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsFeature,
@@ -37,9 +36,16 @@ except AttributeError:
     FIELD_STRING = QtCore.QVariant.String
 
 try:
-    POINT_SOURCE_TYPE = Qgis.ProcessingSourceType.VectorPoint
+    POINT_SOURCE_TYPE = QgsProcessing.SourceType.TypeVectorPoint
 except AttributeError:
-    POINT_SOURCE_TYPE = QgsProcessing.TypeVectorPoint
+    # QGIS 3.4 exposes the same enum member without its scoped enum name.
+    POINT_SOURCE_TYPE = getattr(QgsProcessing, "TypeVectorPoint")
+
+try:
+    FAST_INSERT = QgsFeatureSink.Flag.FastInsert
+except AttributeError:
+    # Compatibility with the unscoped enum exposed by older QGIS 3.x builds.
+    FAST_INSERT = getattr(QgsFeatureSink, "FastInsert")
 
 
 class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
@@ -221,7 +227,7 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
             for field_name, value in result_values.items():
                 attrs[output_indexes[field_name]] = value
             out.setAttributes(attrs)
-            if not sink.addFeature(out, QgsFeatureSink.FastInsert):
+            if not sink.addFeature(out, FAST_INSERT):
                 raise QgsProcessingException(
                     self.tr("Could not write an output feature.")
                 )
