@@ -62,15 +62,15 @@ class ElevationResult:
 
 
 def _response_message(response):
-    """Extract a short useful message without including the request URL/API key."""
+    """Extract a message without including the request URL or API key."""
     try:
         data = response.json()
-        if isinstance(data, dict):
-            for key in ("detail", "message", "error", "Error"):
-                if data.get(key):
-                    return str(data[key])[:500]
-    except Exception:
-        pass
+    except ValueError:
+        data = None
+    if isinstance(data, dict):
+        for key in ("detail", "message", "error", "Error"):
+            if data.get(key):
+                return str(data[key])[:500]
     text = (response.text or "").strip().replace("\n", " ")
     return text[:500] if text else "No additional error details were returned."
 
@@ -90,21 +90,27 @@ def query_elevation(longitude, latitude, dataset, api_key, timeout=30):
     try:
         response = requests.get(BASE_URL, params=params, timeout=timeout)
     except requests.RequestException as exc:
-        raise OpenTopographyApiError(f"Could not connect to OpenTopography: {exc}") from exc
+        raise OpenTopographyApiError(
+            "Could not connect to OpenTopography."
+        ) from exc
 
     # Documented expected responses for no-data/out-of-coverage point queries.
     if response.status_code in (404, 422):
         return ElevationResult(None, dataset, "", "", no_data=True)
 
     if not response.ok:
+        response_message = _response_message(response)
         raise OpenTopographyApiError(
-            f"OpenTopography returned HTTP {response.status_code}: {_response_message(response)}"
+            f"OpenTopography returned HTTP {response.status_code}: "
+            f"{response_message}"
         )
 
     try:
         data = response.json()
     except ValueError as exc:
-        raise OpenTopographyApiError("OpenTopography returned a non-JSON response.") from exc
+        raise OpenTopographyApiError(
+            "OpenTopography returned a non-JSON response."
+        ) from exc
 
     elev = data.get("Elevation")
     if elev in (None, "", "null"):
@@ -116,7 +122,8 @@ def query_elevation(longitude, latitude, dataset, api_key, timeout=30):
             no_data = False
         except (TypeError, ValueError) as exc:
             raise OpenTopographyApiError(
-                f"Unexpected Elevation value returned by OpenTopography: {elev!r}"
+                "Unexpected Elevation value returned by OpenTopography: "
+                f"{elev!r}"
             ) from exc
 
     return ElevationResult(

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """Processing algorithm: copy points and append OpenTopography elevation."""
 
-from qgis.PyQt.QtCore import QCoreApplication, QVariant
+from qgis.PyQt import QtCore
 from qgis.core import (
+    Qgis,
     QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
     QgsFeature,
@@ -17,10 +18,28 @@ from qgis.core import (
     QgsProcessingParameterString,
     QgsProject,
     QgsSettings,
-    QgsWkbTypes,
 )
 
-from .api import DATASETS, SETTINGS_KEY, OpenTopographyApiError, dataset_label, query_elevation
+from .api import (
+    DATASETS,
+    SETTINGS_KEY,
+    OpenTopographyApiError,
+    dataset_label,
+    query_elevation,
+)
+
+
+try:
+    FIELD_DOUBLE = QtCore.QMetaType.Type.Double
+    FIELD_STRING = QtCore.QMetaType.Type.QString
+except AttributeError:
+    FIELD_DOUBLE = QtCore.QVariant.Double
+    FIELD_STRING = QtCore.QVariant.String
+
+try:
+    POINT_SOURCE_TYPE = Qgis.ProcessingSourceType.VectorPoint
+except AttributeError:
+    POINT_SOURCE_TYPE = QgsProcessing.TypeVectorPoint
 
 
 class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
@@ -30,7 +49,9 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
     OUTPUT = "OUTPUT"
 
     def tr(self, text):
-        return QCoreApplication.translate("OpenTopographyPointElevation", text)
+        return QtCore.QCoreApplication.translate(
+            "OpenTopographyPointElevation", text
+        )
 
     def createInstance(self):
         return AddElevationToPointsAlgorithm()
@@ -49,11 +70,14 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
 
     def shortHelpString(self):
         return self.tr(
-            "Queries the OpenTopography Point Elevation API once per input point and creates a new "
-            "output layer containing the original attributes plus ot_elev, ot_dem, ot_vcrs and ot_unit. "
-            "Input coordinates are transformed to WGS84 before querying. Multipart point features use "
-            "their first point. Paste your OpenTopography access key into the tool. The key is saved in "
-            "this QGIS profile and pre-filled the next time, matching the OpenTopography DEM Downloader workflow. "
+            "Queries the OpenTopography Point Elevation API once per input "
+            "point and creates a new output layer containing the original "
+            "attributes plus ot_elev, ot_dem, ot_vcrs and ot_unit. Input "
+            "coordinates are transformed to WGS84 before querying. "
+            "Multipart point features use their first point. Paste your "
+            "OpenTopography access key into the tool. The key is saved in "
+            "this QGIS profile and pre-filled the next time, matching the "
+            "OpenTopography DEM Downloader workflow. "
             "OpenTopography daily API limits apply."
         )
 
@@ -63,13 +87,15 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
         if not ot_auth_token:
             auth_prompt = self.tr("Enter OpenTopography access key")
         else:
-            auth_prompt = self.tr("Enter OpenTopography access key (or use existing one below)")
+            auth_prompt = self.tr(
+                "Enter OpenTopography access key (or use existing one below)"
+            )
 
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 self.INPUT,
                 self.tr("Input point layer"),
-                [QgsProcessing.TypeVectorPoint],
+                [POINT_SOURCE_TYPE],
             )
         )
         self.addParameter(
@@ -88,26 +114,36 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
                 defaultValue=ot_auth_token,
             )
         )
-        self.addParameter(QgsProcessingParameterFeatureSink(self.OUTPUT, self.tr("Points with elevation")))
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                self.OUTPUT, self.tr("Points with elevation")
+            )
+        )
 
     def processAlgorithm(self, parameters, context, feedback):
         source = self.parameterAsSource(parameters, self.INPUT, context)
         if source is None:
-            raise QgsProcessingException(self.invalidSourceError(parameters, self.INPUT))
+            raise QgsProcessingException(
+                self.invalidSourceError(parameters, self.INPUT)
+            )
 
         dataset_index = self.parameterAsEnum(parameters, self.DATASET, context)
         dataset = DATASETS[dataset_index][0]
         settings = QgsSettings()
-        api_key = self.parameterAsString(parameters, self.OT_AUTH_TOKEN, context).strip()
+        api_key = self.parameterAsString(
+            parameters, self.OT_AUTH_TOKEN, context
+        ).strip()
         if not api_key:
-            raise QgsProcessingException(self.tr("Enter your OpenTopography access key."))
+            raise QgsProcessingException(
+                self.tr("Enter your OpenTopography access key.")
+            )
 
         fields = source.fields()
         output_defs = [
-            ("ot_elev", QVariant.Double),
-            ("ot_dem", QVariant.String),
-            ("ot_vcrs", QVariant.String),
-            ("ot_unit", QVariant.String),
+            ("ot_elev", FIELD_DOUBLE),
+            ("ot_dem", FIELD_STRING),
+            ("ot_vcrs", FIELD_STRING),
+            ("ot_unit", FIELD_STRING),
         ]
         added_field_names = []
         for field_name, field_type in output_defs:
@@ -115,7 +151,9 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
                 fields.append(QgsField(field_name, field_type))
                 added_field_names.append(field_name)
 
-        output_indexes = {name: fields.indexOf(name) for name, _ in output_defs}
+        output_indexes = {
+            name: fields.indexOf(name) for name, _ in output_defs
+        }
 
         sink, dest_id = self.parameterAsSink(
             parameters,
@@ -126,12 +164,16 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
             source.sourceCrs(),
         )
         if sink is None:
-            raise QgsProcessingException(self.invalidSinkError(parameters, self.OUTPUT))
+            raise QgsProcessingException(
+                self.invalidSinkError(parameters, self.OUTPUT)
+            )
 
         to_wgs84 = None
         if source.sourceCrs().authid() != "EPSG:4326":
             to_wgs84 = QgsCoordinateTransform(
-                source.sourceCrs(), QgsCoordinateReferenceSystem("EPSG:4326"), QgsProject.instance()
+                source.sourceCrs(),
+                QgsCoordinateReferenceSystem("EPSG:4326"),
+                QgsProject.instance(),
             )
 
         total = source.featureCount()
@@ -143,7 +185,8 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
 
             out = QgsFeature(fields)
             out.setGeometry(feature.geometry())
-            attrs = list(feature.attributes()) + [None] * len(added_field_names)
+            attrs = list(feature.attributes())
+            attrs += [None] * len(added_field_names)
             result_values = {
                 "ot_elev": None,
                 "ot_dem": dataset,
@@ -152,8 +195,8 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
             }
 
             geom = feature.geometry()
-            if geom and not geom.isEmpty() and QgsWkbTypes.geometryType(geom.wkbType()) == QgsWkbTypes.PointGeometry:
-                if QgsWkbTypes.isMultiType(geom.wkbType()):
+            if geom and not geom.isEmpty():
+                if geom.isMultipart():
                     pts = geom.asMultiPoint()
                     pt = pts[0] if pts else None
                 else:
@@ -162,7 +205,9 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
                     if to_wgs84:
                         pt = to_wgs84.transform(pt)
                     try:
-                        result = query_elevation(pt.x(), pt.y(), dataset, api_key)
+                        result = query_elevation(
+                            pt.x(), pt.y(), dataset, api_key
+                        )
                     except OpenTopographyApiError as exc:
                         raise QgsProcessingException(str(exc)) from exc
                     if not result.no_data and result.elevation is not None:
@@ -177,7 +222,9 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
                 attrs[output_indexes[field_name]] = value
             out.setAttributes(attrs)
             if not sink.addFeature(out, QgsFeatureSink.FastInsert):
-                raise QgsProcessingException(self.tr("Could not write an output feature."))
+                raise QgsProcessingException(
+                    self.tr("Could not write an output feature.")
+                )
 
             feedback.setProgress(int((i + 1) * step))
 

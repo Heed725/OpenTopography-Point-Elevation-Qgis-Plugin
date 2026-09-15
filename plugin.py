@@ -26,11 +26,19 @@ class OpenTopographyPointElevationPlugin:
         QgsApplication.processingRegistry().addProvider(self.provider)
 
         icon_path = os.path.join(os.path.dirname(__file__), "icon.png")
-        self.action = QAction(QIcon(icon_path), "OpenTopography Point Elevation", self.iface.mainWindow())
+        self.action = QAction(
+            QIcon(icon_path),
+            "OpenTopography Point Elevation",
+            self.iface.mainWindow(),
+        )
         self.action.setObjectName("OpenTopographyPointElevationAction")
-        self.action.setToolTip("Add OpenTopography elevation values to a point layer")
+        self.action.setToolTip(
+            "Add OpenTopography elevation values to a point layer"
+        )
         self.action.triggered.connect(self.run)
-        self.iface.addPluginToVectorMenu("&OpenTopography Point Elevation", self.action)
+        self.iface.addPluginToVectorMenu(
+            "&OpenTopography Point Elevation", self.action
+        )
         self.iface.addToolBarIcon(self.action)
 
     def unload(self):
@@ -38,7 +46,9 @@ class OpenTopographyPointElevationPlugin:
             QgsApplication.processingRegistry().removeProvider(self.provider)
             self.provider = None
         if self.action:
-            self.iface.removePluginVectorMenu("&OpenTopography Point Elevation", self.action)
+            self.iface.removePluginVectorMenu(
+                "&OpenTopography Point Elevation", self.action
+            )
             self.iface.removeToolBarIcon(self.action)
             self.action.deleteLater()
             self.action = None

@@ -1,0 +1,52 @@
+name: Security and compatibility checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install scanners
+        run: python -m pip install bandit detect-secrets flake8
+
+      - name: Run Bandit
+        run: bandit -r . --exclude ./.git -q
+
+      - name: Run detect-secrets
+        run: |
+          detect-secrets scan \
+            --exclude-files '(^|/)\.git/' \
+            --exclude-files '\.zip$' \
+            > /tmp/detect-secrets.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path('/tmp/detect-secrets.json').read_text(encoding='utf-8')
+          )
+          findings = report.get('results', {})
+          if findings:
+              for path, entries in findings.items():
+                  print(f'{path}: {len(entries)} potential secret(s)')
+              raise SystemExit(1)
+          print('No potential secrets detected.')
+          PY
+
+      - name: Run Flake8
+        run: flake8 --exclude=.git .
