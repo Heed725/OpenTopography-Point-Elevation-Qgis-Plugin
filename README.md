@@ -71,7 +71,8 @@ Different elevation products may use different vertical reference systems. The P
 
 ## Installation
 
-1. Download `OpenTopography-Point-Elevation.zip`.
+1. On the GitHub release page, under **Assets**, download the file named exactly `OpenTopography-Point-Elevation.zip`.
+   Do **not** download GitHub's automatically generated **Source code (zip)** or **Source code (tar.gz)** archives; they are repository snapshots, not QGIS-installable plugin packages.
 2. In QGIS open **Plugins → Manage and Install Plugins…**.
 3. Choose **Install from ZIP**.
 4. Select the ZIP and install it.
