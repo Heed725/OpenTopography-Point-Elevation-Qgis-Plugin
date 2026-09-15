@@ -22,12 +22,13 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf package OpenTopography-Point-Elevation.zip
-          mkdir -p package/OpenTopography-Point-Elevation
-          cp __init__.py api.py metadata.txt plugin.py processing_algorithm.py processing_provider.py icon.png README.md CREDITS.md LICENSE package/OpenTopography-Point-Elevation/
+          mkdir -p package/opentopography_point_elevation
+          cp __init__.py api.py metadata.txt plugin.py processing_algorithm.py processing_provider.py icon.png README.md CREDITS.md LICENSE package/opentopography_point_elevation/
           cd package
-          zip -r ../OpenTopography-Point-Elevation.zip OpenTopography-Point-Elevation
+          zip -r ../OpenTopography-Point-Elevation.zip opentopography_point_elevation
           cd ..
           unzip -t OpenTopography-Point-Elevation.zip
+          test "$(unzip -Z1 OpenTopography-Point-Elevation.zip | head -n 1)" = "opentopography_point_elevation/"
 
       - name: Commit refreshed ZIP
         shell: bash
