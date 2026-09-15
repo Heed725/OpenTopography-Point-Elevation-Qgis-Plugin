@@ -57,7 +57,6 @@ class ElevationResult:
     elevation: Optional[float]
     shortname: str
     vcrs_epsg: str
-    vcrs_wkt: str
     unit: str
     no_data: bool = False
 
@@ -95,7 +94,7 @@ def query_elevation(longitude, latitude, dataset, api_key, timeout=30):
 
     # Documented expected responses for no-data/out-of-coverage point queries.
     if response.status_code in (404, 422):
-        return ElevationResult(None, dataset, "", "", "", no_data=True)
+        return ElevationResult(None, dataset, "", "", no_data=True)
 
     if not response.ok:
         raise OpenTopographyApiError(
@@ -124,7 +123,6 @@ def query_elevation(longitude, latitude, dataset, api_key, timeout=30):
         elevation=value,
         shortname=str(data.get("Shortname") or dataset),
         vcrs_epsg=str(data.get("VCRS_EPSG") or ""),
-        vcrs_wkt=str(data.get("VCRS_WKT") or ""),
         unit=str(data.get("Unit") or "Meters"),
         no_data=no_data,
     )

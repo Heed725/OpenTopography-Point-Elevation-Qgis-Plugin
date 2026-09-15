@@ -52,9 +52,9 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
             "Queries the OpenTopography Point Elevation API once per input point and creates a new "
             "output layer containing the original attributes plus ot_elev, ot_dem, ot_vcrs and ot_unit. "
             "Input coordinates are transformed to WGS84 before querying. Multipart point features use "
-            "their first point. Paste your OpenTopography access key into the access-key parameter; the plugin "
-            "stores it in QgsSettings and pre-fills the same field on later runs, matching the OpenTopography "
-            "DEM Downloader workflow. OpenTopography daily API limits apply."
+            "their first point. Paste your OpenTopography access key into the tool. The key is saved in "
+            "this QGIS profile and pre-filled the next time, matching the OpenTopography DEM Downloader workflow. "
+            "OpenTopography daily API limits apply."
         )
 
     def initAlgorithm(self, config=None):

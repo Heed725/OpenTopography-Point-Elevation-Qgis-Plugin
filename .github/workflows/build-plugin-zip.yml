@@ -23,7 +23,7 @@ jobs:
           set -euo pipefail
           rm -rf package OpenTopography-Point-Elevation.zip
           mkdir -p package/OpenTopography-Point-Elevation
-          cp __init__.py api.py dialog.py map_tool.py metadata.txt plugin.py processing_algorithm.py processing_provider.py icon.png README.md CREDITS.md LICENSE package/OpenTopography-Point-Elevation/
+          cp __init__.py api.py metadata.txt plugin.py processing_algorithm.py processing_provider.py icon.png README.md CREDITS.md LICENSE package/OpenTopography-Point-Elevation/
           cd package
           zip -r ../OpenTopography-Point-Elevation.zip OpenTopography-Point-Elevation
           cd ..
