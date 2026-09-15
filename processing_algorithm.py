@@ -45,7 +45,7 @@ except AttributeError:
 class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
     INPUT = "INPUT"
     DATASET = "DATASET"
-    OT_AUTH_TOKEN = "OT_AUTH_TOKEN"
+    ACCESS_KEY_PARAMETER = "OT_AUTH_TOKEN"
     OUTPUT = "OUTPUT"
 
     def tr(self, text):
@@ -108,7 +108,7 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
         )
         self.addParameter(
             QgsProcessingParameterString(
-                self.OT_AUTH_TOKEN,
+                self.ACCESS_KEY_PARAMETER,
                 auth_prompt,
                 multiLine=False,
                 defaultValue=ot_auth_token,
@@ -131,7 +131,7 @@ class AddElevationToPointsAlgorithm(QgsProcessingAlgorithm):
         dataset = DATASETS[dataset_index][0]
         settings = QgsSettings()
         api_key = self.parameterAsString(
-            parameters, self.OT_AUTH_TOKEN, context
+            parameters, self.ACCESS_KEY_PARAMETER, context
         ).strip()
         if not api_key:
             raise QgsProcessingException(
